@@ -465,3 +465,6 @@ gilvanvmj-mlops-icev/
 | `report.save_html()` falha no Evidently 0.7 | a API mudou na 0.7 | `snapshot = report.run(...)` e `snapshot.save_html(...)` |
 | `&&` / `\|\|` dá erro no PowerShell 5.1 | são operadores do `cmd`/bash | usar `;` + `if ($?) { ... }` |
 | `pytest` "no tests ran" (exit 5) trava o CI | nenhum teste coletado | há `tests/` com testes mínimos |
+| `ImportError: cannot import name 'FastAPI' from partially initialized module 'fastapi'` | arquivo de exemplo nomeado `fastapi.py` cria conflito circular com o pacote | nunca nomeie um `.py` igual ao pacote que ele importa; use `app.py` |
+| `curl` retorna erro de parâmetro `-H` no PowerShell | `curl` é alias de `Invoke-WebRequest`; flags são incompatíveis | usar `curl.exe` (binário real) ou `Invoke-RestMethod` |
+| API sobe com `{"status":"ok"}` mas `Registered Model not found` no log | `MLFLOW_TRACKING_URI` não configurado no script standalone | adicionar `mlflow.set_tracking_uri("http://127.0.0.1:5000")` antes do `load_model` |

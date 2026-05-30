@@ -4,6 +4,9 @@
 #
 # Ambos os servicos usam a MESMA imagem (Dockerfile); o servico 'mlflow'
 # apenas sobrescreve o comando para rodar o tracking server.
+#
+# Os volumes montam os arquivos locais (mlflow.db e mlartifacts/) gerados nas
+# etapas anteriores (train.py + promote.py), então o @champion já existe.
 services:
   mlflow:
     build: .
@@ -11,25 +14,27 @@ services:
       mlflow server --host 0.0.0.0 --port 5000
       --backend-store-uri sqlite:////app/mlflow.db
       --artifacts-destination /app/mlartifacts --serve-artifacts
-      --allowed-hosts "mlflow:5000,localhost:5000,127.0.0.1:5000"
+      --allowed-hosts "mlflow,mlflow:5000,localhost,localhost:5000,127.0.0.1,127.0.0.1:5000"
     ports:
       - "5000:5000"
     volumes:
       - ./mlflow.db:/app/mlflow.db
       - ./mlartifacts:/app/mlartifacts
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:5000/health').status==200 else 1)"]
       interval: 5s
       timeout: 3s
       retries: 12
+      start_period: 10s
 
   api:
     build: .
     environment:
-      # Dentro da rede do compose, o MLflow e alcancado pelo nome do servico.
+      # Dentro da rede do compose, o MLflow é alcançado pelo nome do serviço.
       MLFLOW_TRACKING_URI: "http://mlflow:5000"
+      PYTHONIOENCODING: utf-8
     ports:
       - "8000:8000"
     depends_on:
       mlflow:
-        condition: service_healthy   # so sobe a API quando o MLflow responder
+        condition: service_healthy   # só sobe a API quando o MLflow responder
