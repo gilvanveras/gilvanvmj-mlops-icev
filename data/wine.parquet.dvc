@@ -1,0 +1,5 @@
+outs:
+- md5: 1eb6fd80924ae070461ffbce1caf11dc
+  size: 17615
+  hash: md5
+  path: wine.parquet
