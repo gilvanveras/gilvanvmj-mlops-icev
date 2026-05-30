@@ -339,6 +339,13 @@ uv run pytest -q
 > O `build-and-push` usa `secrets.GITHUB_TOKEN` (automático) e publica duas tags:
 > `:latest` e `:${{ github.sha }}`.
 
+Após o `git push`, o workflow roda no GitHub Actions:
+
+![CI verde no GitHub Actions](docs/img/ci_actions.png)
+
+*Run **Success**: job `quality` (lint+test) → `build-and-push` (imagem no GHCR),
+encadeados por `needs:`. Verde = pode promover/deployar.*
+
 ---
 
 ## 14. Deploy local com `docker compose` (MLflow + API)
@@ -352,6 +359,15 @@ o MLflow fica saudável (`depends_on: condition: service_healthy`).
 
 ✅ **Em outro terminal:** `curl.exe http://localhost:8000/health` → `{"status":"ok"}`.
 Derrubar: `docker compose down`.
+
+![docker compose up: MLflow + API](docs/img/compose_up.png)
+
+*`docker compose ps`: os dois serviços de pé (`mlflow` *healthy*, `api` *up*),
+e a API servindo `/health` e `/predict` a partir do container.*
+
+> ⚠️ O MLflow 3.x valida o header `Host` (proteção anti-DNS-rebinding). Como a
+> API chama `http://mlflow:5000`, o servidor sobe com
+> `--allowed-hosts "mlflow:5000,localhost:5000,127.0.0.1:5000"` no compose.
 
 ---
 
