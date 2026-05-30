@@ -1,0 +1,34 @@
+# docker-compose.yml - sobe MLflow + API juntos (avaliacao Parte 2, Tarefa C).
+#   docker compose up --build
+#   API:    http://localhost:8000/docs     MLflow: http://localhost:5000
+#
+# Ambos os servicos usam a MESMA imagem (Dockerfile); o servico 'mlflow'
+# apenas sobrescreve o comando para rodar o tracking server.
+services:
+  mlflow:
+    build: .
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////app/mlflow.db
+      --artifacts-destination /app/mlartifacts --serve-artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow.db:/app/mlflow.db
+      - ./mlartifacts:/app/mlartifacts
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  api:
+    build: .
+    environment:
+      # Dentro da rede do compose, o MLflow e alcancado pelo nome do servico.
+      MLFLOW_TRACKING_URI: "http://mlflow:5000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      mlflow:
+        condition: service_healthy   # so sobe a API quando o MLflow responder

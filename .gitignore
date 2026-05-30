@@ -1,4 +1,8 @@
-.venv/ 
-__pycache__/ 
-.pytest_cache/ 
-.ruff_cache/ 
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+logs/
+reports/
+*.bak.pptx
+~$*

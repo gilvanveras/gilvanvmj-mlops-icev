@@ -1,0 +1,21 @@
+# Pipeline declarativo do DVC.
+#
+#   raw  --(src/data.py)-->  processed  --(src/train.py)-->  MLflow Registry
+#
+# `dvc repro` executa só os estágios cujas dependências mudaram. O estágio
+# 'train' não tem 'outs' versionados pelo DVC porque o artefato vai para o
+# MLflow (Registry), não para um arquivo local.
+stages:
+  data:
+    cmd: uv run python src/data.py
+    deps:
+      - src/data.py
+      - data/raw/wine.parquet
+    outs:
+      - data/processed/wine.parquet
+
+  train:
+    cmd: uv run python src/train.py
+    deps:
+      - src/train.py
+      - data/processed/wine.parquet

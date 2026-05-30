@@ -1,0 +1,18 @@
+schema: '2.0'
+stages:
+  data:
+    cmd: uv run python src/data.py
+    deps:
+    - path: data/raw/wine.parquet
+      hash: md5
+      md5: 1eb6fd80924ae070461ffbce1caf11dc
+      size: 17615
+    - path: src/data.py
+      hash: md5
+      md5: c3ea251e8c7ae61032c48c87dd46ae7e
+      size: 1093
+    outs:
+    - path: data/processed/wine.parquet
+      hash: md5
+      md5: 8815056679773e0290ed7ecd50d489d6
+      size: 17173

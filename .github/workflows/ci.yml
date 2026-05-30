@@ -1,0 +1,43 @@
+name: ci
+
+# Dispara em push na main e em qualquer pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # ---- Gate de qualidade: lint + testes (fail fast) ----
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true          # cache de dependencias
+      - run: uv sync --frozen         # respeita o uv.lock
+      - run: uv run ruff check .      # lint
+      - run: uv run pytest -q         # testes
+
+  # ---- Build + push da imagem para o GHCR (so na main, se quality passou) ----
+  build-and-push:
+    needs: quality
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:                      # permissoes minimas
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}   # secret automatico
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
